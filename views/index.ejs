@@ -1,0 +1,306 @@
+<%layout("/layouts/boilerplate.ejs")%>
+
+<style>
+  .home-shell {
+    background:
+      radial-gradient(circle at top left, rgba(13, 110, 253, 0.16), transparent 34rem),
+      linear-gradient(180deg, #f8fbff 0%, #ffffff 42%, #f7fafc 100%);
+  }
+
+  .home-hero {
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+  }
+
+  .hero-panel {
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(13, 110, 253, 0.12);
+    box-shadow: 0 24px 70px rgba(16, 24, 40, 0.10);
+    backdrop-filter: blur(12px);
+  }
+
+  .hero-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #0d6efd;
+    background: rgba(13, 110, 253, 0.10);
+    border: 1px solid rgba(13, 110, 253, 0.16);
+    border-radius: 999px;
+    padding: 0.45rem 0.8rem;
+    font-weight: 700;
+    font-size: 0.88rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2.2rem, 5vw, 4.5rem);
+    line-height: 1.02;
+  }
+
+  .hero-copy {
+    max-width: 680px;
+    color: #5f6b7a;
+    font-size: 1.08rem;
+  }
+
+  .quick-stat {
+    border-left: 3px solid #0d6efd;
+    padding-left: 0.85rem;
+  }
+
+  .exam-card .card,
+  .update-card,
+  .testimonial-card {
+    border-radius: 1rem;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  }
+
+  .exam-card:hover .card,
+  .update-card:hover,
+  .testimonial-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 42px rgba(16, 24, 40, 0.12) !important;
+    border-color: rgba(13, 110, 253, 0.22) !important;
+  }
+
+  .exam-icon {
+    width: 62px;
+    height: 62px;
+    margin: 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.13), rgba(32, 201, 151, 0.13));
+    font-size: 1.9rem;
+  }
+
+  .view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #0d6efd;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .section-eyebrow {
+    color: #0d6efd;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+  }
+
+  .testimonial-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-weight: 800;
+    background: linear-gradient(135deg, #0d6efd, #20c997);
+  }
+</style>
+
+<main class="home-shell">
+  <!-- Hero -->
+  <section class="home-hero py-5">
+    <div class="container py-4">
+      <div class="hero-panel rounded-4 p-4 p-md-5">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-8">
+            <div class="hero-kicker mb-3">
+              <i class="bi bi-mortarboard-fill"></i>
+              Exam prep made focused
+            </div>
+
+            <% if (user) { %>
+              <h1 class="hero-title fw-bold mb-3">Welcome back, <%= user.username %>.</h1>
+              <p class="hero-copy mb-4">Pick your target exam, jump into curated resources, and keep your preparation moving with less noise.</p>
+              <a href="#exams" class="btn btn-primary btn-lg">
+                Choose an exam <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+            <% } else { %>
+              <h1 class="hero-title fw-bold mb-3">Build a brighter future, one exam at a time.</h1>
+              <p class="hero-copy mb-4">Find study resources, save what matters, and stay updated with the latest exam notices in one clean place.</p>
+              <div class="d-flex flex-column flex-sm-row gap-3">
+                <a href="/auth/login?tab=register" class="btn btn-primary btn-lg">
+                  Join Saarthi For Free <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+                <a href="#exams" class="btn btn-outline-primary btn-lg">
+                  Explore exams
+                </a>
+              </div>
+            <% } %>
+          </div>
+
+          <div class="col-lg-4">
+              
+              
+                <div class="p-3 rounded-4 bg-primary-subtle text-primary">
+                  <div class="fw-bold mb-1"><i class="bi bi-lightning-charge-fill me-1"></i> Quotes of the Day</div>
+                  <div class="small"><%= quote ? quote.content : 'Curated material helps you spend more time studying and less time searching.' %></div>
+                  <% if (quote && quote.author) { %>
+                    <div class="text-end small text-muted mt-1">— <%= quote.author %></div>
+                  <% } %>
+                </div>
+              
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Exams Grid -->
+  <section id="exams" class="container py-5">
+ <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+  
+  <div>
+    <div class="section-eyebrow mb-2">Target exams</div>
+    <h2 class="fw-bold mb-1">Explore Exams</h2>
+    <p class="text-muted mb-0">
+      Choose your path and open the right resource library.
+    </p>
+  </div>
+
+  <% if(user && user.admin){ %>
+    <a href="/admin/addExam"
+       class="btn btn-primary rounded-pill px-4">
+      <i class="bi bi-plus-circle me-2"></i>
+      Add New Exam
+    </a>
+  <% } %>
+
+</div>
+
+    <div class="row g-4">
+  <% exams.forEach(exam => { %>
+    <div class="col-6 col-md-4 col-lg-3 position-relative">
+
+      <% if(user && user.admin){ %>
+        <a href="/admin/exam/edit/<%= exam._id %>"
+           class="position-absolute text-primary"
+           style="top:12px; right:18px; z-index:100; font-size:18px;"
+           onclick="event.stopPropagation()">
+          <i class="bi bi-pencil-square"></i>
+        </a>
+      <% } %>
+     
+
+      <a href="subject/<%= exam._id %>" class="exam-card text-decoration-none">
+        <div class="card border-0 h-100 shadow-sm">
+
+          <div class="card-body text-center p-4">
+            <div class="exam-icon">
+              <span><%= exam.icon %></span>
+            </div>
+
+            <h6 class="fw-bold mt-3 mb-1 text-dark">
+              <%= exam.examName %>
+            </h6>
+
+            <p class="text-muted small mb-3">
+              <%= exam.courseType %>
+            </p>
+           
+            <span class="view-btn">
+              Explore <i class="bi bi-arrow-right"></i>
+            </span>
+            
+
+
+          </div>
+
+        </div>
+      </a>
+
+    </div>
+  <% }) %>
+</div>
+  </section>
+
+  <!-- Latest Updates -->
+  <section class="container py-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+      <div>
+        <div class="section-eyebrow mb-2">Stay informed</div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-bell text-primary me-2"></i>Latest Updates</h2>
+        <p class="text-muted mb-0">Important notices and quick exam alerts in one place.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <% if (user && user.admin) { %>
+          <% //newChange %>
+          <a href="/admin/addUpdate" class="btn btn-sm btn-danger rounded-pill px-3">
+            <% //newChange %>
+            <i class="bi bi-plus-circle me-1"></i> Add Update
+          </a>
+        <% } %>
+        <a href="/updates" class="btn btn-sm btn-outline-secondary">
+          View all <i class="bi bi-chevron-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <% updates.forEach(update => { %>
+        <div class="col-md-6">
+          <div class="card update-card h-100 shadow-sm <%= update.isImportant ? 'border-danger' : 'border-0' %>">
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="fw-bold mb-0"><%= update.title %></h6>
+                <% if (update.isImportant) { %><span class="badge bg-danger ms-2">Hot</span><% } %>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary mb-2"><%= update.category %></span>
+              <p class="text-muted small mb-3"><%= update.content.substring(0,120) %>...</p>
+              <div class="text-muted small">
+                <i class="bi bi-calendar3 me-1"></i>
+                <%= new Date(update.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <!-- <section class="container pb-5">
+    <div class="text-center mb-4">
+      <div class="section-eyebrow mb-2">Student stories</div>
+      <h2 class="fw-bold mb-2">Learners trust BrightFuture</h2>
+      <p class="text-muted mb-0">Simple resources, clear updates, and a calmer way to prepare.</p>
+    </div>
+
+    <div class="row g-4">
+      <% if (testimonials && testimonials.length > 0) { %>
+        <% testimonials.forEach(item => { %>
+          <div class="col-md-4">
+            <div class="card testimonial-card border-0 shadow-sm h-100">
+              <div class="card-body p-4">
+                <div class="text-warning mb-3">
+                  <i class="bi bi-star-fill"></i>
+                  <i class="bi bi-star-fill"></i>
+                  <i class="bi bi-star-fill"></i>
+                  <i class="bi bi-star-fill"></i>
+                  <i class="bi bi-star-fill"></i>
+                </div>
+                <p class="text-muted mb-4">"<%= item.quote %>"</p>
+                <div class="d-flex align-items-center gap-3">
+                  <div class="testimonial-avatar"><%= item.initial %></div>
+                  <div>
+                    <div class="fw-bold"><%= item.name %></div>
+                    <div class="text-muted small"><%= item.role %></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="col-12 text-center py-4 text-muted">No testimonials yet.</div>
+      <% } %>
+    </div>
+  </section> -->
+</main>

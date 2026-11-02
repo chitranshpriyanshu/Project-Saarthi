@@ -1,0 +1,770 @@
+<% layout("/layouts/boilerplate.ejs") %>
+
+<style>
+  :root {
+    --admin-primary: #0d6efd;
+    --admin-bg: #f6f8fb;
+    --admin-border: #e7ecf3;
+    --admin-text: #172033;
+    --admin-muted: #667085;
+    --admin-card-shadow: 0 14px 34px rgba(16, 24, 40, 0.08);
+    --admin-sidebar-width: 280px;
+    --admin-sidebar-collapsed: 84px;
+    --admin-radius: 18px;
+  }
+
+  body {
+    background: var(--admin-bg);
+    color: var(--admin-text);
+  }
+
+  .admin-shell {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 20% -10%, rgba(13, 110, 253, 0.12), transparent 26rem),
+      linear-gradient(180deg, #fbfcff 0%, #f6f8fb 46%, #f7f9fc 100%);
+  }
+
+  .admin-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: var(--admin-sidebar-width);
+    z-index: 1030;
+    background: rgba(255, 255, 255, 0.94);
+    border-right: 1px solid var(--admin-border);
+    box-shadow: 8px 0 32px rgba(16, 24, 40, 0.06);
+    backdrop-filter: blur(14px);
+    transition: width 180ms ease;
+  }
+
+  .admin-shell.sidebar-collapsed .admin-sidebar {
+    width: var(--admin-sidebar-collapsed);
+  }
+
+  .admin-brand-mark {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    color: #ffffff;
+    background: linear-gradient(135deg, #0d6efd, #3b82f6);
+    box-shadow: 0 12px 28px rgba(13, 110, 253, 0.22);
+  }
+
+  .admin-sidebar-label,
+  .admin-brand-text,
+  .admin-user-meta {
+    transition: opacity 140ms ease, transform 140ms ease;
+  }
+
+  .admin-shell.sidebar-collapsed .admin-sidebar-label,
+  .admin-shell.sidebar-collapsed .admin-brand-text,
+  .admin-shell.sidebar-collapsed .admin-user-meta {
+    opacity: 0;
+    transform: translateX(-6px);
+    pointer-events: none;
+    width: 0;
+    overflow: hidden;
+  }
+
+  .admin-nav-link {
+    min-height: 46px;
+    color: #344054;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+
+  .admin-nav-link:hover,
+  .admin-nav-link.active {
+    color: var(--admin-primary);
+    background: rgba(13, 110, 253, 0.09);
+  }
+
+  .admin-nav-link i {
+    width: 24px;
+    text-align: center;
+  }
+
+  .admin-main {
+    min-height: 100vh;
+    margin-left: var(--admin-sidebar-width);
+    transition: margin-left 180ms ease;
+  }
+
+  .admin-shell.sidebar-collapsed .admin-main {
+    margin-left: var(--admin-sidebar-collapsed);
+  }
+
+  .admin-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    background: rgba(246, 248, 251, 0.84);
+    border-bottom: 1px solid rgba(231, 236, 243, 0.8);
+    backdrop-filter: blur(16px);
+  }
+
+  .admin-content {
+    max-width: 1440px;
+  }
+
+  .admin-search {
+    max-width: 520px;
+  }
+
+  .admin-search .form-control {
+    border-radius: 999px;
+    border-color: var(--admin-border);
+    padding-left: 2.75rem;
+  }
+
+  .admin-search i {
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #98a2b3;
+  }
+
+  .admin-card {
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    background: #ffffff;
+    box-shadow: var(--admin-card-shadow);
+  }
+
+  .stat-icon,
+  .action-icon,
+  .activity-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+  }
+
+  .stat-icon {
+    color: var(--admin-primary);
+    background: rgba(13, 110, 253, 0.1);
+  }
+
+  .action-card {
+    color: inherit;
+    text-decoration: none;
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  }
+
+  .action-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(13, 110, 253, 0.28);
+    box-shadow: 0 18px 44px rgba(16, 24, 40, 0.11);
+  }
+
+  .action-icon {
+    color: #ffffff;
+    background: var(--admin-primary);
+  }
+
+  .activity-icon {
+    width: 38px;
+    height: 38px;
+    color: var(--admin-primary);
+    background: rgba(13, 110, 253, 0.1);
+  }
+
+  .btn-icon {
+    width: 40px;
+    height: 40px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 12px;
+  }
+
+  .btn-soft {
+    color: #344054;
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+  }
+
+  .btn-soft:hover {
+    color: var(--admin-primary);
+    border-color: rgba(13, 110, 253, 0.3);
+    background: rgba(13, 110, 253, 0.06);
+  }
+
+  .badge-soft-blue {
+    color: #0d6efd;
+    background: rgba(13, 110, 253, 0.1);
+    border: 1px solid rgba(13, 110, 253, 0.16);
+  }
+
+  .table > :not(caption) > * > * {
+    padding: 1rem;
+    vertical-align: middle;
+  }
+
+  .table thead th {
+    color: #667085;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--admin-border);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .hierarchy-accordion .accordion-item {
+    border: 1px solid var(--admin-border);
+    border-radius: 16px;
+    overflow: hidden;
+    background: #ffffff;
+  }
+
+  .hierarchy-accordion .accordion-button {
+    padding: 1rem 1.15rem;
+    font-weight: 700;
+    box-shadow: none;
+  }
+
+  .hierarchy-accordion .accordion-button:not(.collapsed) {
+    color: var(--admin-primary);
+    background: rgba(13, 110, 253, 0.06);
+  }
+
+  .chapter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid var(--admin-border);
+    border-radius: 999px;
+    background: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  
+  .chapter-chip:hover {
+    border-color: var(--admin-primary);
+    background: rgba(13, 110, 253, 0.05);
+    transform: scale(1.02);
+  }
+
+  .avatar-sm {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #ffffff;
+    background: linear-gradient(135deg, #0d6efd, #60a5fa);
+    font-weight: 700;
+  }
+
+  @media (max-width: 991.98px) {
+    .admin-sidebar {
+      display: none;
+    }
+
+    .admin-main,
+    .admin-shell.sidebar-collapsed .admin-main {
+      margin-left: 0;
+    }
+  }
+</style>
+
+<div class="admin-shell" id="adminShell">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar d-none d-lg-flex flex-column p-3" aria-label="Admin sidebar">
+    <div class="d-flex align-items-center gap-3 px-2 pb-4">
+      <div class="admin-brand-mark"><i class="bi bi-mortarboard-fill fs-5"></i></div>
+      <div class="admin-brand-text">
+        <div class="fw-bold fs-5">Saarthi</div>
+        <div class="text-secondary small">Admin Console</div>
+      </div>
+    </div>
+
+    <nav class="d-grid gap-1" aria-label="Dashboard navigation">
+      <a href="#overview" class="admin-nav-link active d-flex align-items-center gap-3 px-3 text-decoration-none">
+        <i class="bi bi-grid-1x2"></i><span class="admin-sidebar-label">Overview</span>
+      </a>
+      <a href="#activities" class="admin-nav-link d-flex align-items-center gap-3 px-3 text-decoration-none">
+        <i class="bi bi-clock-history"></i><span class="admin-sidebar-label">Recent Edits</span>
+      </a>
+      <a href="#content" class="admin-nav-link d-flex align-items-center gap-3 px-3 text-decoration-none">
+        <i class="bi bi-collection-play"></i><span class="admin-sidebar-label">Exams</span>
+      </a>
+      <a href="#hierarchy" class="admin-nav-link d-flex align-items-center gap-3 px-3 text-decoration-none">
+        <i class="bi bi-diagram-3"></i><span class="admin-sidebar-label">Curriculum Structure</span>
+      </a>
+      <a href="/admin/questionBank" class="admin-nav-link d-flex align-items-center gap-3 px-3 text-decoration-none">
+        <i class="bi bi-question-circle"></i><span class="admin-sidebar-label">Question Bank</span>
+      </a>
+      <a href="/admin/quiz/create" class="admin-nav-link d-flex align-items-center gap-3 px-3 text-decoration-none">
+        <i class="bi bi-patch-question"></i><span class="admin-sidebar-label">Create Quiz</span>
+      </a>
+      <a href="#users" class="admin-nav-link d-flex align-items-center gap-3 px-3 text-decoration-none">
+        <i class="bi bi-people"></i><span class="admin-sidebar-label">Users List</span>
+      </a>
+    </nav>
+
+    <div class="mt-auto">
+      <div class="admin-card p-3 shadow-none">
+        <div class="d-flex align-items-center gap-3">
+          <div class="avatar-sm">
+            <%= user ? user.username.substring(0, 2).toUpperCase() : 'AD' %>
+          </div>
+          <div class="admin-user-meta">
+            <div class="fw-semibold small"><%= user ? user.username : 'Saarthi Admin' %></div>
+            <div class="text-secondary small"><%= user ? user.email : 'admin@saarthi.edu' %></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile Sidebar Canvas -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
+    <div class="offcanvas-header border-bottom">
+      <div class="d-flex align-items-center gap-3">
+        <div class="admin-brand-mark"><i class="bi bi-mortarboard-fill fs-5"></i></div>
+        <div>
+          <h5 class="offcanvas-title fw-bold mb-0" id="mobileSidebarLabel">Saarthi</h5>
+          <div class="text-secondary small">Admin Console</div>
+        </div>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close menu"></button>
+    </div>
+    <div class="offcanvas-body">
+      <nav class="d-grid gap-1" aria-label="Mobile dashboard navigation">
+        <a href="#overview" class="admin-nav-link active d-flex align-items-center gap-3 px-3 text-decoration-none" data-bs-dismiss="offcanvas"><i class="bi bi-grid-1x2"></i>Overview</a>
+        <a href="#activities" class="admin-nav-link d-flex align-items-center gap-3 px-3 text-decoration-none" data-bs-dismiss="offcanvas"><i class="bi bi-clock-history"></i>Recent Edits</a>
+        <a href="#content" class="admin-nav-link d-flex align-items-center gap-3 px-3 text-decoration-none" data-bs-dismiss="offcanvas"><i class="bi bi-collection-play"></i>Exams</a>
+        <a href="#hierarchy" class="admin-nav-link d-flex align-items-center gap-3 px-3 text-decoration-none" data-bs-dismiss="offcanvas"><i class="bi bi-diagram-3"></i>Curriculum Structure</a>
+        <a href="/admin/questionBank" class="admin-nav-link d-flex align-items-center gap-3 px-3 text-decoration-none" data-bs-dismiss="offcanvas"><i class="bi bi-question-circle"></i>Question Bank</a>
+        <a href="/admin/quiz/create" class="admin-nav-link d-flex align-items-center gap-3 px-3 text-decoration-none" data-bs-dismiss="offcanvas"><i class="bi bi-patch-question"></i>Create Quiz</a>
+        <a href="#users" class="admin-nav-link d-flex align-items-center gap-3 px-3 text-decoration-none" data-bs-dismiss="offcanvas"><i class="bi bi-people"></i>Users List</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Main Content Wrapper -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div class="admin-content mx-auto px-3 px-lg-4 py-3">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <button class="btn btn-soft btn-icon d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar" aria-label="Open sidebar">
+            <i class="bi bi-list fs-5"></i>
+          </button>
+          <button class="btn btn-soft btn-icon d-none d-lg-inline-grid" type="button" id="sidebarToggle" aria-label="Collapse sidebar">
+            <i class="bi bi-layout-sidebar-inset"></i>
+          </button>
+
+          <div class="h5 fw-bold mb-0">Saarthi Admin Console</div>
+
+          <div class="ms-auto d-flex align-items-center gap-2">
+            <div class="dropdown">
+              <button class="btn btn-soft d-flex align-items-center gap-2 rounded-pill px-2 pe-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="avatar-sm" style="width:28px; height:28px; font-size: 0.8rem;"><%= user ? user.username.substring(0, 2).toUpperCase() : 'AD' %></span>
+                <span class="d-none d-sm-inline fw-semibold small"><%= user ? user.username : 'Saarthi Admin' %></span>
+                <i class="bi bi-chevron-down small"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                <li><a class="dropdown-item text-danger" href="/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content mx-auto px-3 px-lg-4 py-4 py-lg-5">
+      
+      <!-- Overview Section -->
+      <section id="overview" class="mb-5">
+        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-end gap-3 mb-4">
+          <div>
+            <span class="badge badge-soft-blue rounded-pill px-3 py-2 mb-3">Live Platform Administration</span>
+            <h1 class="fw-bold mb-2">Welcome Back, <%= user ? user.username.split(' ')[0] : 'Admin' %></h1>
+            <p class="text-secondary mb-0">Add resources, monitor exam mappings, and track modifications dynamically.</p>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <a href="/admin/addQuote" class="btn btn-outline-success rounded-pill"><i class="bi bi-chat-quote-fill me-2"></i>New Quote of Day</a>
+            <a href="/admin/addUpdate" class="btn btn-outline-primary rounded-pill"><i class="bi bi-bell-fill me-2"></i>New Update Notice</a>
+            <a href="/admin/quiz/create" class="btn btn-primary rounded-pill"><i class="bi bi-patch-question me-2"></i>Create Quiz</a>
+            <a href="/admin/addExam" class="btn btn-primary rounded-pill"><i class="bi bi-plus-lg me-2"></i>Add Target Exam</a>
+          </div>
+        </div>
+
+        <!-- Dynamic Statistics -->
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
+          <div class="col">
+            <article class="admin-card h-100 p-4">
+              <div class="d-flex align-items-start justify-content-between gap-3">
+                <div class="stat-icon bg-primary-subtle text-primary"><i class="bi bi-people fs-4"></i></div>
+                <span class="badge text-bg-light border">Platform Users</span>
+              </div>
+              <div class="mt-4">
+                <div class="text-secondary small fw-semibold">Total Registered Learners</div>
+                <div class="display-6 fw-bold mb-1"><%= stats.users %></div>
+              </div>
+            </article>
+          </div>
+
+          <div class="col">
+            <article class="admin-card h-100 p-4">
+              <div class="d-flex align-items-start justify-content-between gap-3">
+                <div class="stat-icon bg-success-subtle text-success"><i class="bi bi-journal-check fs-4"></i></div>
+                <span class="badge text-bg-light border">Active Tracks</span>
+              </div>
+              <div class="mt-4">
+                <div class="text-secondary small fw-semibold">Target Exams Mapped</div>
+                <div class="display-6 fw-bold mb-1"><%= stats.exams %></div>
+              </div>
+            </article>
+          </div>
+
+          <div class="col">
+            <article class="admin-card h-100 p-4">
+              <div class="d-flex align-items-start justify-content-between gap-3">
+                <div class="stat-icon bg-warning-subtle text-warning"><i class="bi bi-book fs-4"></i></div>
+                <span class="badge text-bg-light border">Content Maps</span>
+              </div>
+              <div class="mt-4">
+                <div class="text-secondary small fw-semibold">Subjects & Chapters Count</div>
+                <div class="display-6 fw-bold mb-1"><%= stats.subjects %> / <%= stats.chapters %></div>
+              </div>
+            </article>
+          </div>
+
+          <div class="col">
+            <article class="admin-card h-100 p-4">
+              <div class="d-flex align-items-start justify-content-between gap-3">
+                <div class="stat-icon bg-info-subtle text-info"><i class="bi bi-file-earmark-arrow-up fs-4"></i></div>
+                <span class="badge text-bg-light border">Resource Count</span>
+              </div>
+              <div class="mt-4">
+                <div class="text-secondary small fw-semibold">Lectures, Notes, Sheets</div>
+                <div class="display-6 fw-bold mb-1"><%= stats.lectures + stats.notes + stats.sheets %></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Grid layout for Audit Trails and Recent Activity -->
+      <div class="row g-4 mb-5" id="activities">
+        <div class="col-12 col-xl-5">
+          <section class="admin-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <h2 class="h5 fw-bold mb-1">Administrative Audit Logs</h2>
+                <p class="text-secondary small mb-0">Tracking user actions across database models.</p>
+              </div>
+            </div>
+            <div class="d-grid gap-4">
+              <% if (recentActivities.length === 0) { %>
+                <div class="text-muted text-center py-4">No content edits recorded yet.</div>
+              <% } else { %>
+                <% recentActivities.forEach((activity) => { %>
+                  <div class="d-flex gap-3 align-items-start">
+                    <div class="activity-icon bg-primary-subtle text-primary" style="width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center;">
+                      <i class="bi <%= activity.type === 'Exam' ? 'bi-journal-check' : activity.type === 'Subject' ? 'bi-layers' : activity.type === 'Chapter' ? 'bi-diagram-3' : activity.type === 'Lecture' ? 'bi-play-circle' : activity.type === 'Announcement' ? 'bi-bell' : 'bi-file-earmark-text' %>"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="fw-bold small mb-1"><%= activity.title %></div>
+                      <div class="text-secondary small" style="line-height: 1.2;">
+                        <%= activity.type %> was <strong><%= activity.action %></strong> by: <span class="text-dark fw-semibold"><%= activity.updatedBy ? activity.updatedBy.username : (activity.createdBy ? activity.createdBy.username : 'System Admin') %></span>
+                      </div>
+                      <div class="text-muted small mt-1" style="font-size: 0.75rem;">
+                        <i class="bi bi-clock me-1"></i><%= new Date(activity.updatedAt).toLocaleString() %>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+              <% } %>
+            </div>
+          </section>
+        </div>
+
+        <div class="col-12 col-xl-7">
+          <section class="admin-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <h2 class="h5 fw-bold mb-1">Interactive Analytics</h2>
+                <p class="text-secondary small mb-0">Database entities relative contribution snapshot.</p>
+              </div>
+            </div>
+            <div style="height: 330px; position: relative;">
+              <canvas id="learningChart" aria-label="Learning stats contribution chart" role="img"></canvas>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Exam List Section -->
+      <section class="admin-card mb-5 overflow-hidden" id="content">
+        <div class="p-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <h2 class="h5 fw-bold mb-1">Target Exams</h2>
+            <p class="text-secondary small mb-0">Overview of mapped course categories, icons, and creators.</p>
+          </div>
+          <a href="/admin/addExam" class="btn btn-primary rounded-pill"><i class="bi bi-plus-lg me-1"></i>Add Exam</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col">Exam Track</th>
+                <th scope="col">Category</th>
+                <th scope="col">Activity & Creators</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (exams.length === 0) { %>
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">No exams created yet.</td>
+                </tr>
+              <% } else { %>
+                <% exams.forEach((exam) => { %>
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-3">
+                        <span class="stat-icon fs-5" style="background: rgba(13, 110, 253, 0.08);"><%= exam.icon || '📚' %></span>
+                        <div>
+                          <div class="fw-bold"><%= exam.examName %></div>
+                          <div class="text-secondary small">ID: <%= exam._id %></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="badge text-bg-light border"><%= exam.courseType %></span></td>
+                    <td>
+                      <div class="small text-secondary">
+                        Created By: <strong><%= exam.createdBy ? exam.createdBy.username : 'System' %></strong><br/>
+                        Updated By: <strong><%= exam.updatedBy ? exam.updatedBy.username : 'System' %></strong>
+                      </div>
+                    </td>
+                    <td><span class="badge text-bg-success">Live</span></td>
+                    <td class="text-end">
+                      <div class="btn-group btn-group-sm">
+                        <a href="/admin/subject/<%= exam._id %>/add" class="btn btn-outline-success" title="Add Subject to Exam"><i class="bi bi-journal-plus"></i></a>
+                        <a href="/admin/<%= exam._id %>/addQuestion" class="btn btn-outline-info" title="Add Question to Exam"><i class="bi bi-question-lg"></i></a>
+                        <a href="/admin/exam/edit/<%= exam._id %>" class="btn btn-outline-primary" title="Edit Exam"><i class="bi bi-pencil"></i></a>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Dynamic Accordion Hierarchy Section -->
+      <section class="admin-card p-4 mb-5" id="hierarchy">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+          <div>
+            <h2 class="h5 fw-bold mb-1">Curriculum Mappings (Exams ➔ Subjects ➔ Chapters)</h2>
+            <p class="text-secondary small mb-0">Expand to manage nested subjects, chapters, and resources.</p>
+          </div>
+        </div>
+
+        <div class="accordion hierarchy-accordion d-grid gap-3" id="examHierarchy">
+          <% if (hierarchy.length === 0) { %>
+            <div class="text-center py-5 border border-dashed rounded-4 text-muted">
+              No content hierarchy mapped. Start by adding a <a href="/admin/addExam" class="fw-bold">Target Exam</a>.
+            </div>
+          <% } else { %>
+            <% hierarchy.forEach((examItem, examIndex) => { %>
+              <div class="accordion-item">
+                <h3 class="accordion-header">
+                  <button class="accordion-button <%= examIndex === 0 ? '' : 'collapsed' %>" type="button" data-bs-toggle="collapse" data-bs-target="#examCollapse<%= examIndex %>" aria-expanded="<%= examIndex === 0 ? 'true' : 'false' %>" aria-controls="examCollapse<%= examIndex %>">
+                    <span class="me-2"><i class="bi bi-journal-check text-primary me-2"></i></span><%= examItem.exam %>
+                  </button>
+                </h3>
+                <div id="examCollapse<%= examIndex %>" class="accordion-collapse collapse <%= examIndex === 0 ? 'show' : '' %>" data-bs-parent="#examHierarchy">
+                  <div class="accordion-body">
+                    <div class="row g-3">
+                      <% if (examItem.subjects.length === 0) { %>
+                        <div class="col-12 text-muted small p-3">
+                          No subjects defined under this exam. <a href="/admin/subject/<%= examItem.examId %>/add" class="fw-bold"><i class="bi bi-plus-circle me-1"></i>Add Subject</a>
+                        </div>
+                      <% } else { %>
+                        <% examItem.subjects.forEach((subject) => { %>
+                          <div class="col-12 col-lg-4">
+                            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+                              <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                                <div>
+                                  <div class="fw-bold text-truncate" style="max-width: 180px;"><%= subject.name %></div>
+                                  <div class="text-secondary small"><%= subject.chapters.length %> chapters</div>
+                                </div>
+                                <div class="d-flex gap-1">
+                                  <a class="btn btn-sm btn-soft btn-icon" href="/admin/subject/<%= subject._id %>/addChapter" title="Add Chapter to Subject">
+                                    <i class="bi bi-plus-lg"></i>
+                                  </a>
+                                  <a class="btn btn-sm btn-soft btn-icon" href="/admin/subject/<%= subject._id %>/edit" title="Edit Subject">
+                                    <i class="bi bi-pencil"></i>
+                                  </a>
+                                </div>
+                              </div>
+                              <div class="d-flex flex-wrap gap-2">
+                                <% if (subject.chapters.length === 0) { %>
+                                  <span class="text-muted small">No chapters defined.</span>
+                                <% } else { %>
+                                  <% subject.chapters.forEach((chapter) => { %>
+                                    <div class="d-flex gap-1 align-items-center">
+                                      <a href="/admin/chapter/<%= chapter._id %>/edit" class="chapter-chip text-decoration-none" title="Edit Chapter">
+                                        <i class="bi bi-file-earmark-text text-primary"></i>
+                                        <%= chapter.name %>
+                                      </a>
+                                      <a href="/admin/content/<%= chapter._id %>/addContent" class="btn btn-xs btn-outline-primary rounded-circle p-1" title="Add Content (Lecture/Note/Sheet)" style="font-size: 0.6rem; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-plus"></i>
+                                      </a>
+                                    </div>
+                                  <% }) %>
+                                <% } %>
+                              </div>
+                            </div>
+                          </div>
+                        <% }) %>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- Users Snapshot List -->
+      <section class="admin-card overflow-hidden" id="users">
+        <div class="p-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <h2 class="h5 fw-bold mb-1">Users List</h2>
+            <p class="text-secondary small mb-0">Overview of active student accounts and roles on the platform.</p>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col">Learner</th>
+                <th scope="col">Role</th>
+                <th scope="col">Email Verification</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (users.length === 0) { %>
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">No registered users on the platform.</td>
+                </tr>
+              <% } else { %>
+                <% users.forEach((learner) => { %>
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-3">
+                        <span class="avatar-sm"><%= learner.username.substring(0, 2).toUpperCase() %></span>
+                        <div>
+                          <div class="fw-bold"><%= learner.username %></div>
+                          <div class="text-secondary small"><%= learner.email %></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge rounded-pill <%= learner.admin ? 'bg-danger text-white' : (learner.moderator ? 'bg-warning text-dark' : 'bg-secondary text-white') %>">
+                        <%= learner.admin ? 'Admin' : (learner.moderator ? 'Moderator' : 'Student') %>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge <%= learner.verified ? 'bg-success text-white' : 'bg-secondary text-white' %>">
+                        <%= learner.verified ? 'Verified' : 'Unverified' %>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="text-secondary small"><i class="bi bi-circle-fill text-success me-1 small"></i>Active</span>
+                    </td>
+                    <td class="text-end">
+                      <% if (user && user._id.toString() !== learner._id.toString()) { %>
+                        <form action="/admin/users/<%= learner._id %>/toggle-admin" method="POST" class="d-inline m-0">
+                          <button type="submit" class="btn btn-xs <%= learner.admin ? 'btn-outline-danger' : 'btn-outline-primary' %> rounded-pill px-3">
+                            <%= learner.admin ? 'Demote' : 'Make Admin' %>
+                          </button>
+                        </form>
+                      <% } else { %>
+                        <span class="text-muted small">Logged In</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var shell = document.getElementById("adminShell");
+    var sidebarToggle = document.getElementById("sidebarToggle");
+    var chartCanvas = document.getElementById("learningChart");
+
+    if (sidebarToggle && shell) {
+      sidebarToggle.addEventListener("click", function () {
+        shell.classList.toggle("sidebar-collapsed");
+      });
+    }
+
+    if (window.Chart && chartCanvas) {
+      new Chart(chartCanvas, {
+        type: "doughnut",
+        data: {
+          labels: ["Exams", "Subjects", "Chapters", "Lectures", "Notes", "Sheets"],
+          datasets: [{
+            data: [
+              <%= stats.exams %>,
+              <%= stats.subjects %>,
+              <%= stats.chapters %>,
+              <%= stats.lectures %>,
+              <%= stats.notes %>,
+              <%= stats.sheets %>
+            ],
+            backgroundColor: [
+              "#0d6efd",
+              "#198754",
+              "#ffc107",
+              "#dc3545",
+              "#0dcaf0",
+              "#6f42c1"
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                boxWidth: 12,
+                font: {
+                  family: "Inter"
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>

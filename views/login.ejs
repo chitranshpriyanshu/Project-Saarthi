@@ -1,0 +1,76 @@
+<%layout("/layouts/boilerplate.ejs")%>
+<main class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="text-center mb-4">
+        <div class="brand-icon-lg mx-auto mb-3">❇️</div>
+        <h2 class="fw-bold">BrightFuture</h2>
+        <p class="text-muted">Get Ready for your exam preparation</p>
+      </div>
+    
+
+      <ul class="nav nav-tabs mb-4" id="authTab">
+        <li class="nav-item w-50">
+          <a class="nav-link text-center <%= tab!=='register'?'active':'' %>" href="/auth/login">Login</a>
+        </li>
+        <li class="nav-item w-50">
+          <a class="nav-link text-center <%= tab==='register'?'active':'' %>" href="/auth/login?tab=register">Sign Up</a>
+        </li>
+      </ul>
+
+      <% if (tab !== 'register') { %>
+      <!-- Login Form -->
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h5 class="fw-semibold mb-1">Welcome back</h5>
+          <p class="text-muted small mb-4">Enter your credentials to access your account.</p>
+          <form action="/auth/login" method="POST">
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+            </div>
+                        <a href="/auth/forgot-password" class="forgot-link">
+    Forgot Password?
+</a>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+            <p class="text-muted small text-center mt-3">Example: <code>demo@eduhub.com</code> / <code>demo123</code></p>
+          </form>
+        </div>
+      </div>
+      <% } else { %>
+      <!-- Register Form -->
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h5 class="fw-semibold mb-1">Create account</h5>
+          <p class="text-muted small mb-4">Join thousands of students preparing smarter.</p>
+          <form action="/auth/register" method="POST">
+            <div class="mb-3">
+              <label class="form-label">Full Name</label>
+              <input type="text" name="username" class="form-control" placeholder="Your name" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" name="password" class="form-control" placeholder="Min 6 characters" minlength="6" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Confirm Password</label>
+              <input type="password" name="confirm" class="form-control" placeholder="Repeat your password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Create Account</button>
+          </form>
+        </div>
+      </div>
+      <% } %>
+      <p class="text-center small text-muted mt-3"><a href="/">← Back to home</a></p>
+    </div>
+  </div>
+
+</main>
